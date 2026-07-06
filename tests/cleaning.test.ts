@@ -1,11 +1,8 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { cleanFrames } from "../src/services/cleaning";
 import type { DecodedFrame } from "../src/types/telemetry";
-import type { DropoutDetail } from "../src/types/analysis";
 
-function makeFrame(
-  overrides: Partial<DecodedFrame> = {},
-): DecodedFrame {
+function makeFrame(overrides: Partial<DecodedFrame> = {}): DecodedFrame {
   return {
     ts: 0,
     lap: 1,
@@ -95,7 +92,7 @@ describe("cleanFrames — physical bounds removal", () => {
   });
 
   test("removes frame with spd exactly at 400 (boundary not exceeded)", () => {
-    const frames = [makeFrame({ ts: 0, spd: 400 })];
+    const _frames = [makeFrame({ ts: 0, spd: 400 })];
     const result = cleanFrames([makeFrame({ ts: 0, spd: 400 })]);
     expect(result.validFrames).toHaveLength(1);
   });
@@ -132,10 +129,7 @@ describe("cleanFrames — temporal consistency", () => {
   });
 
   test("does not remove frame with speed jump exactly 100 km/h", () => {
-    const frames = [
-      makeFrame({ ts: 0, spd: 200 }),
-      makeFrame({ ts: 50, spd: 300 }),
-    ];
+    const frames = [makeFrame({ ts: 0, spd: 200 }), makeFrame({ ts: 50, spd: 300 })];
     const result = cleanFrames(frames);
     expect(result.validFrames).toHaveLength(2);
   });
@@ -233,7 +227,7 @@ describe("cleanFrames — frame rate stats", () => {
       makeFrame({ ts: 150, pos: 3 }),
     ];
     const result = cleanFrames(frames);
-    const intervals = [40, 60, 50];
+    const _intervals = [40, 60, 50];
     expect(result.frameRate.meanMs).toBeCloseTo(50, 5);
     expect(result.frameRate.medianMs).toBeCloseTo(50, 5);
     expect(result.frameRate.minMs).toBe(40);

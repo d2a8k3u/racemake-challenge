@@ -23,8 +23,7 @@ export function stdev(values: number[]): number {
   const finite = finiteOnly(values);
   if (finite.length < 2) return 0;
   const m = finite.reduce((sum, v) => sum + v, 0) / finite.length;
-  const variance =
-    finite.reduce((sum, v) => sum + (v - m) ** 2, 0) / (finite.length - 1);
+  const variance = finite.reduce((sum, v) => sum + (v - m) ** 2, 0) / (finite.length - 1);
   return Math.sqrt(variance);
 }
 

@@ -1,8 +1,8 @@
-import type { CleanedFrame } from "../types/telemetry";
 import type { DetectedCorner } from "../types/analysis";
-import { movingAverage, median, stdev, mean } from "../utils/stats";
+import type { CleanedFrame } from "../types/telemetry";
+import { guardNaN, safeDiv } from "../utils/math";
 import { findPeaks } from "../utils/peakdetect";
-import { safeDiv, guardNaN } from "../utils/math";
+import { mean, median, movingAverage, stdev } from "../utils/stats";
 
 const SMOOTHING_WINDOW = 7;
 const PEAK_MERGE_DISTANCE = 0.02;
@@ -68,10 +68,7 @@ function extractLapPeaks(lap: CleanedFrame[], lapNumber: number): LapPeak[] {
   }));
 }
 
-function clusterPeaksByPosition(
-  peaks: LapPeak[],
-  clusterDistance: number,
-): LapPeak[][] {
+function clusterPeaksByPosition(peaks: LapPeak[], clusterDistance: number): LapPeak[][] {
   if (peaks.length === 0) return [];
   const sorted = [...peaks].sort((a, b) => a.pos - b.pos);
   const clusters: LapPeak[][] = [[sorted[0]]];
@@ -87,10 +84,7 @@ function clusterPeaksByPosition(
   return clusters;
 }
 
-function findFrameIndexNearPos(
-  frames: CleanedFrame[],
-  targetPos: number,
-): number {
+function findFrameIndexNearPos(frames: CleanedFrame[], targetPos: number): number {
   let nearestIndex = 0;
   let nearestDist = Infinity;
   for (let i = 0; i < frames.length; i++) {
@@ -178,8 +172,7 @@ function buildConsensusCorners(
   return clusters
     .map((cluster) => {
       const detectedOnLaps = [...new Set(cluster.map((p) => p.lap))].sort((a, b) => a - b);
-      const shouldKeep =
-        totalLaps === 1 || detectedOnLaps.length >= 2;
+      const shouldKeep = totalLaps === 1 || detectedOnLaps.length >= 2;
       if (!shouldKeep) return null;
 
       const apexPos = mean(cluster.map((p) => p.pos));

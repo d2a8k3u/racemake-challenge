@@ -1,8 +1,8 @@
-import { expect, test, describe } from "bun:test";
-import { createApp } from "../src/server";
+import { describe, expect, test } from "bun:test";
 import { runAnalysisPipeline } from "../src/routes/analysis";
-import type { WireFrame } from "../src/types/telemetry";
+import { createApp } from "../src/server";
 import type { AnalysisResult } from "../src/types/analysis";
+import type { WireFrame } from "../src/types/telemetry";
 
 const app = createApp();
 
@@ -45,9 +45,8 @@ function buildLapFrames(
     const cornerWidth = 0.06;
     const peakSteering = 35;
     const dist = Math.abs(lapProgress - cornerCenter);
-    const steering = dist < cornerWidth
-      ? peakSteering * Math.cos((dist / cornerWidth) * (Math.PI / 2))
-      : 0;
+    const steering =
+      dist < cornerWidth ? peakSteering * Math.cos((dist / cornerWidth) * (Math.PI / 2)) : 0;
     return frame(lap, i, count, baseTs, intervalMs, speedKmh, steering);
   });
 }
@@ -96,9 +95,7 @@ describe("POST /analysis — validation", () => {
   test("returns 400 for wrong-typed field (spd as string)", async () => {
     const bad = {
       ...VALID_STINT,
-      frames: VALID_STINT.frames.map((f, i) =>
-        i === 0 ? { ...f, spd: "fast" } : f,
-      ),
+      frames: VALID_STINT.frames.map((f, i) => (i === 0 ? { ...f, spd: "fast" } : f)),
     };
     const res = await app.request("/analysis", {
       method: "POST",

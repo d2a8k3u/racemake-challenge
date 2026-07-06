@@ -1,5 +1,5 @@
-import { expect, test, describe } from "bun:test";
-import { clamp, safeDiv, guardNaN, safeSqrt, isFiniteNumber } from "../src/utils/math";
+import { describe, expect, test } from "bun:test";
+import { clamp, guardNaN, isFiniteNumber, safeDiv, safeSqrt } from "../src/utils/math";
 
 describe("clamp", () => {
   test("returns value when within range", () => {

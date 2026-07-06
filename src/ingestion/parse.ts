@@ -1,10 +1,6 @@
+import type { DecodedFrame, DecodedTyres } from "../types/telemetry";
+import type { ParsedStint, WireFrame, WireTyres } from "./schema";
 import { ParsedStintSchema } from "./schema";
-import type {
-  WireTyres,
-  WireFrame,
-  ParsedStint,
-} from "./schema";
-import type { DecodedTyres, DecodedFrame } from "../types/telemetry";
 
 // From recorder.rs: scales::TEMPERATURE = 10.0; tyres encoded as (celsius * 10.0) as i16.
 export const TYRE_TEMP_SCALE = 10.0;

@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
-import { health } from "./routes/health";
-import { analysis } from "./routes/analysis";
 import { errorHandler } from "./middleware/error-handler";
+import { analysis } from "./routes/analysis";
+import { health } from "./routes/health";
 
 export function createApp(): Hono {
   const app = new Hono();

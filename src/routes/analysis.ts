@@ -1,14 +1,14 @@
 import { Hono } from "hono";
-import { z } from "zod";
+import type { z } from "zod";
+import { decodeStint, parseStint, TYRE_TEMP_SCALE } from "../ingestion/parse";
 import { ParsedStintSchema } from "../ingestion/schema";
-import { parseStint, decodeStint, TYRE_TEMP_SCALE } from "../ingestion/parse";
 import { cleanFrames } from "../services/cleaning";
-import { detectLaps, selectBestAndWorstLaps } from "../services/laps";
 import { detectCorners } from "../services/corners";
-import { analyzeTimeLoss } from "../services/timeloss";
+import { detectLaps, selectBestAndWorstLaps } from "../services/laps";
 import { generateRadioCall } from "../services/radio";
-import type { CleanedFrame } from "../types/telemetry";
+import { analyzeTimeLoss } from "../services/timeloss";
 import type { AnalysisResult, RecorderFinding } from "../types/analysis";
+import type { CleanedFrame } from "../types/telemetry";
 
 export const analysis = new Hono();
 

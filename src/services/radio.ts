@@ -1,7 +1,7 @@
 import type {
-  TimeLossReport,
   DetectedCorner,
   RadioCall,
+  TimeLossReport,
   TraceabilityEntry,
 } from "../types/analysis";
 
@@ -64,14 +64,11 @@ export function generateRadioCall(
 
   // --- Total lap delta (leads the headline) ---
   const worstCornerDelta =
-    timeLoss.cornerDeltas.find((cd) => cd.isWorstCorner) ??
-    timeLoss.cornerDeltas[0];
+    timeLoss.cornerDeltas.find((cd) => cd.isWorstCorner) ?? timeLoss.cornerDeltas[0];
 
   const lapTotalDeltaS = timeLoss.totalDeltaS;
   const lapTotalDeltaStr = fmtDelta(lapTotalDeltaS);
-  const worstCornerTotalS = worstCornerDelta
-    ? worstCornerDelta.totalDeltaS
-    : lapTotalDeltaS;
+  const worstCornerTotalS = worstCornerDelta ? worstCornerDelta.totalDeltaS : lapTotalDeltaS;
   const worstCornerDeltaStr = fmtDelta(worstCornerTotalS);
 
   traceability.push({
@@ -110,10 +107,7 @@ export function generateRadioCall(
   }
 
   // Single-lap flag: corners were only seen on one lap (or not at all).
-  if (
-    corners.length === 0 ||
-    corners.some((c) => c.detectedOnLaps.length <= 1)
-  ) {
+  if (corners.length === 0 || corners.some((c) => c.detectedOnLaps.length <= 1)) {
     confidenceFlags.push("single lap detection");
   }
 
@@ -123,8 +117,7 @@ export function generateRadioCall(
 
   if (hasCorners) {
     const worstCorner =
-      corners.find((c) => c.cornerId === worstCornerDelta!.cornerId) ??
-      corners[0];
+      corners.find((c) => c.cornerId === worstCornerDelta?.cornerId) ?? corners[0];
 
     // Corner ID
     const cornerId = worstCorner.cornerId;
@@ -222,8 +215,7 @@ export function generateRadioCall(
     }
 
     // Assemble the full message
-    const headline =
-      `Lost ${lapTotalDeltaStr}s total — most of it (${worstCornerDeltaStr}) at ${cornerId} (apex pos ${apexPosStr}). `;
+    const headline = `Lost ${lapTotalDeltaStr}s total — most of it (${worstCornerDeltaStr}) at ${cornerId} (apex pos ${apexPosStr}). `;
 
     message =
       headline +

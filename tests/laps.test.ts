@@ -1,7 +1,7 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { detectLaps, selectBestAndWorstLaps } from "../src/services/laps";
-import type { CleanedFrame } from "../src/types/telemetry";
 import type { LapReport } from "../src/types/analysis";
+import type { CleanedFrame } from "../src/types/telemetry";
 
 function makeFrame(overrides: Partial<CleanedFrame> = {}): CleanedFrame {
   return {
@@ -289,11 +289,7 @@ describe("selectBestAndWorstLaps — clean laps", () => {
   }
 
   test("selects fastest clean full lap as best, slowest as worst", () => {
-    const laps = [
-      makeFullLap(1, 95000),
-      makeFullLap(2, 90000),
-      makeFullLap(3, 92000),
-    ];
+    const laps = [makeFullLap(1, 95000), makeFullLap(2, 90000), makeFullLap(3, 92000)];
     expect(selectBestAndWorstLaps(laps)).toEqual({ bestLap: 2, worstLap: 1 });
   });
 
@@ -309,20 +305,14 @@ describe("selectBestAndWorstLaps — clean laps", () => {
   });
 
   test("falls back to fastest full lap with dropout when all full laps have dropouts", () => {
-    const laps = [
-      makeFullLap(1, 88000, true, 5000),
-      makeFullLap(2, 95000, true, 3000),
-    ];
+    const laps = [makeFullLap(1, 88000, true, 5000), makeFullLap(2, 95000, true, 3000)];
     const result = selectBestAndWorstLaps(laps);
     expect(result.bestLap).toBe(1);
     expect(result.worstLap).toBe(2);
   });
 
   test("worst is always the slowest full lap regardless of dropout", () => {
-    const laps = [
-      makeFullLap(1, 90000, false, 0),
-      makeFullLap(2, 100000, true, 5000),
-    ];
+    const laps = [makeFullLap(1, 90000, false, 0), makeFullLap(2, 100000, true, 5000)];
     const result = selectBestAndWorstLaps(laps);
     expect(result.bestLap).toBe(1);
     expect(result.worstLap).toBe(2);
@@ -366,9 +356,7 @@ describe("detectLaps — real sample data", () => {
     }
     ts3 += 5000;
     for (let i = 0; i < 51; i++) {
-      fullLap3Frames.push(
-        makeFrame({ lap: 3, ts: ts3, pos: (50 + i) / 100, spd: 200 }),
-      );
+      fullLap3Frames.push(makeFrame({ lap: 3, ts: ts3, pos: (50 + i) / 100, spd: 200 }));
       ts3 += 1000;
     }
 

@@ -1,13 +1,8 @@
-import { expect, test, describe } from "bun:test";
-import {
-  parseStint,
-  decodeTyres,
-  decodeFrame,
-  decodeStint,
-} from "../src/ingestion/parse";
-import { WireFrameSchema, ParsedStintSchema } from "../src/ingestion/schema";
-import sampleStintRaw from "../stint.telemetry.json";
+import { describe, expect, test } from "bun:test";
+import { decodeFrame, decodeStint, decodeTyres, parseStint } from "../src/ingestion/parse";
+import { ParsedStintSchema, WireFrameSchema } from "../src/ingestion/schema";
 import type { WireTyres } from "../src/types/telemetry";
+import sampleStintRaw from "../stint.telemetry.json";
 
 const validFrame = {
   ts: 48,

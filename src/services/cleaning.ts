@@ -1,5 +1,5 @@
-import type { DecodedFrame, CleanedFrame } from "../types/telemetry";
-import type { RemovedFrameDetail, DropoutDetail } from "../types/analysis";
+import type { DropoutDetail, RemovedFrameDetail } from "../types/analysis";
+import type { CleanedFrame, DecodedFrame } from "../types/telemetry";
 import { mean, median, stdev } from "../utils/stats";
 
 const MAX_SPEED_KMH = 400;
@@ -29,10 +29,7 @@ const EMPTY_FRAME_RATE = {
   maxMs: 0,
 } as const;
 
-type RemovalReason =
-  | "spd_exceeds_physical_max"
-  | "rpm_exceeds_physical_max"
-  | "spd_temporal_jump";
+type RemovalReason = "spd_exceeds_physical_max" | "rpm_exceeds_physical_max" | "spd_temporal_jump";
 
 function isPhysicallyPlausible(frame: DecodedFrame): RemovalReason | null {
   if (frame.spd > MAX_SPEED_KMH) return "spd_exceeds_physical_max";
@@ -44,10 +41,7 @@ function hasTemporalJump(current: DecodedFrame, previous: DecodedFrame): boolean
   return Math.abs(current.spd - previous.spd) > MAX_SPEED_JUMP_KMH;
 }
 
-function buildRemovedDetail(
-  frame: DecodedFrame,
-  reason: RemovalReason,
-): RemovedFrameDetail {
+function buildRemovedDetail(frame: DecodedFrame, reason: RemovalReason): RemovedFrameDetail {
   return {
     ts: frame.ts,
     reason,

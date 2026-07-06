@@ -1,5 +1,5 @@
-import { expect, test, describe } from "bun:test";
-import { mean, median, stdev, movingAverage, quantile, mad } from "../src/utils/stats";
+import { describe, expect, test } from "bun:test";
+import { mad, mean, median, movingAverage, quantile, stdev } from "../src/utils/stats";
 
 describe("mean", () => {
   test("returns mean of numbers", () => {

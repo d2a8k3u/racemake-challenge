@@ -1,6 +1,6 @@
-import { expect, test, describe } from "bun:test";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createApp } from "../src/server";
 import type { AnalysisResult } from "../src/types/analysis";
 

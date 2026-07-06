@@ -1,5 +1,5 @@
-import type { CleanedFrame } from "../types/telemetry";
 import type { LapReport } from "../types/analysis";
+import type { CleanedFrame } from "../types/telemetry";
 import { guardNaN } from "../utils/math";
 import { median } from "../utils/stats";
 

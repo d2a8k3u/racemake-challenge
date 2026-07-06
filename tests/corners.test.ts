@@ -1,4 +1,4 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { detectCorners } from "../src/services/corners";
 import type { CleanedFrame } from "../src/types/telemetry";
 
@@ -66,12 +66,8 @@ describe("detectCorners — single lap", () => {
     expect(corners[0].cornerId).toBe("C1");
     expect(corners[0].direction).toBe("right");
     expect(corners[0].positionRange.apex).toBeCloseTo(0.3, 1);
-    expect(corners[0].positionRange.entry).toBeLessThan(
-      corners[0].positionRange.apex,
-    );
-    expect(corners[0].positionRange.exit).toBeGreaterThan(
-      corners[0].positionRange.apex,
-    );
+    expect(corners[0].positionRange.entry).toBeLessThan(corners[0].positionRange.apex);
+    expect(corners[0].positionRange.exit).toBeGreaterThan(corners[0].positionRange.apex);
     expect(corners[0].peakSteeringDeg).toBeCloseTo(30, 0);
     expect(corners[0].consensusStrength).toBeCloseTo(1.0, 5);
     expect(corners[0].confidence).toBe("high");
@@ -88,10 +84,7 @@ describe("detectCorners — single lap", () => {
   });
 
   test("detects two corners in a single lap", () => {
-    const lap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [
-      RIGHT_CORNER,
-      LEFT_CORNER,
-    ]);
+    const lap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER, LEFT_CORNER]);
     const corners = detectCorners([lap]);
     expect(corners).toHaveLength(2);
     expect(corners[0].cornerId).toBe("C1");
@@ -142,30 +135,19 @@ describe("detectCorners — multiple laps", () => {
     const lap2 = buildLap(2, 11000, FRAME_COUNT, INTERVAL_MS, corners);
     const result = detectCorners([lap1, lap2]);
     expect(result.map((c) => c.cornerId)).toEqual(["C1", "C2"]);
-    expect(result[0].positionRange.apex).toBeLessThan(
-      result[1].positionRange.apex,
-    );
+    expect(result[0].positionRange.apex).toBeLessThan(result[1].positionRange.apex);
   });
 });
 
 describe("detectCorners — driver-independent detection", () => {
   test("detects same corner whether driver brakes or goes flat", () => {
-    const brakingLap = buildLap(
-      1,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      [RIGHT_CORNER],
-      (pos) => {
-        if (Math.abs(pos - 0.3) < 0.1) {
-          return { brk: 0.5, thr: 0.3 };
-        }
-        return {};
-      },
-    );
-    const flatLap = buildLap(2, 11000, FRAME_COUNT, INTERVAL_MS, [
-      RIGHT_CORNER,
-    ]);
+    const brakingLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER], (pos) => {
+      if (Math.abs(pos - 0.3) < 0.1) {
+        return { brk: 0.5, thr: 0.3 };
+      }
+      return {};
+    });
+    const flatLap = buildLap(2, 11000, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
     const result = detectCorners([brakingLap, flatLap]);
     expect(result).toHaveLength(1);
     expect(result[0].direction).toBe("right");
@@ -215,9 +197,7 @@ describe("detectCorners — zone boundaries", () => {
     const result = detectCorners([lap1, lap2]);
     for (const corner of result) {
       expect(corner.positionRange.entry).toBeLessThan(corner.positionRange.apex);
-      expect(corner.positionRange.exit).toBeGreaterThan(
-        corner.positionRange.apex,
-      );
+      expect(corner.positionRange.exit).toBeGreaterThan(corner.positionRange.apex);
     }
   });
 });

@@ -1,18 +1,18 @@
-import { writeFileSync, mkdirSync } from "fs";
-import { join } from "path";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { runAnalysisPipeline } from "../../src/routes/analysis";
 import type { WireFrame } from "../../src/types/telemetry";
 
-const TYRE_SCALE = 10;
+const _TYRE_SCALE = 10;
 const FRAME_COUNT = 121;
-const INTERVAL_MS = 100;
+const _INTERVAL_MS = 100;
 const STRAIGHT_SPEED = 210;
 const CORNER_SPEED = 120;
 
 // Five designed corner positions, alternating direction.
 // Right = positive steering, Left = negative steering.
 const CORNERS = [
-  { center: 0.10, width: 0.05, peak: 35, direction: 1 },
+  { center: 0.1, width: 0.05, peak: 35, direction: 1 },
   { center: 0.25, width: 0.05, peak: -40, direction: -1 },
   { center: 0.45, width: 0.06, peak: 38, direction: 1 },
   { center: 0.65, width: 0.05, peak: -36, direction: -1 },
@@ -118,8 +118,16 @@ const stint = buildStint();
 // Validate against the pipeline before writing the fixture.
 const result = runAnalysisPipeline(stint);
 console.log("corners detected:", result.corners.length);
-console.log("corner apexes:", result.corners.map((c) => c.positionRange.apex.toFixed(3)).join(", "));
-console.log("lap count:", result.laps.length, "full racing laps:", result.laps.filter((l) => l.isFullRacingLap).length);
+console.log(
+  "corner apexes:",
+  result.corners.map((c) => c.positionRange.apex.toFixed(3)).join(", "),
+);
+console.log(
+  "lap count:",
+  result.laps.length,
+  "full racing laps:",
+  result.laps.filter((l) => l.isFullRacingLap).length,
+);
 console.log("best lap:", result.timeLoss.bestLap, "worst lap:", result.timeLoss.worstLap);
 console.log("total delta:", result.timeLoss.totalDeltaS);
 console.log("removed frames:", result.dataQuality.removedFrames);

@@ -1,30 +1,30 @@
-import { expect, test, describe } from "bun:test";
-import type {
-  WireTyres,
-  WireFrame,
-  ParsedStint,
-  DecodedFrame,
-  DecodedTyres,
-  CleanedFrame,
-} from "../src/types/telemetry";
+import { describe, expect, test } from "bun:test";
 import type {
   AnalysisResult,
-  RecorderFinding,
+  CornerDelta,
+  CornerMetrics,
+  CornerPhase,
   DataQuality,
-  RemovedFrameDetail,
+  DetectedCorner,
   DropoutDetail,
   LapReport,
-  DetectedCorner,
-  CornerPhase,
-  TimeLossReport,
-  CornerDelta,
-  RootCause,
-  RootCauseMetrics,
-  CornerMetrics,
   MetricDeltas,
   RadioCall,
+  RecorderFinding,
+  RemovedFrameDetail,
+  RootCause,
+  RootCauseMetrics,
+  TimeLossReport,
   TraceabilityEntry,
 } from "../src/types/analysis";
+import type {
+  CleanedFrame,
+  DecodedFrame,
+  DecodedTyres,
+  ParsedStint,
+  WireFrame,
+  WireTyres,
+} from "../src/types/telemetry";
 
 describe("telemetry types compile", () => {
   test("WireTyres", () => {
@@ -331,9 +331,7 @@ describe("analysis types compile", () => {
   test("RadioCall", () => {
     const call: RadioCall = {
       message: "You lost 0.3s in T1 due to braking too late.",
-      traceability: [
-        { claim: "0.3s lost in T1", source: "corner deltas", value: "0.3s" },
-      ],
+      traceability: [{ claim: "0.3s lost in T1", source: "corner deltas", value: "0.3s" }],
       confidenceFlags: [],
     };
     expect(call.message.length).toBeGreaterThan(0);

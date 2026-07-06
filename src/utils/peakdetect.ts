@@ -12,10 +12,7 @@ export function findPeaks(
   return merged.sort((a, b) => a.pos - b.pos);
 }
 
-function detectLocalMaxima(
-  values: PosMagnitude[],
-  threshold: number,
-): PosMagnitude[] {
+function detectLocalMaxima(values: PosMagnitude[], threshold: number): PosMagnitude[] {
   const peaks: PosMagnitude[] = [];
   let i = 0;
   while (i < values.length - 1) {
@@ -26,18 +23,14 @@ function detectLocalMaxima(
 
     let plateauEnd = i;
     const plateauMag = values[i].magnitude;
-    while (
-      plateauEnd + 1 < values.length &&
-      values[plateauEnd + 1].magnitude === plateauMag
-    ) {
+    while (plateauEnd + 1 < values.length && values[plateauEnd + 1].magnitude === plateauMag) {
       plateauEnd += 1;
     }
 
     const hasLeftNeighbor = i > 0;
     const hasRightNeighbor = plateauEnd < values.length - 1;
     const isLeftEdgeRising = !hasLeftNeighbor || values[i - 1].magnitude < plateauMag;
-    const isRightEdgeFalling =
-      !hasRightNeighbor || values[plateauEnd + 1].magnitude < plateauMag;
+    const isRightEdgeFalling = !hasRightNeighbor || values[plateauEnd + 1].magnitude < plateauMag;
 
     if (hasLeftNeighbor && hasRightNeighbor && isLeftEdgeRising && isRightEdgeFalling) {
       const centerIndex = Math.floor((i + plateauEnd) / 2);
@@ -49,10 +42,7 @@ function detectLocalMaxima(
   return peaks;
 }
 
-function mergeNearbyPeaks(
-  peaks: PosMagnitude[],
-  mergeDistance: number,
-): PosMagnitude[] {
+function mergeNearbyPeaks(peaks: PosMagnitude[], mergeDistance: number): PosMagnitude[] {
   if (peaks.length === 0) return [];
   const sorted = [...peaks].sort((a, b) => a.pos - b.pos);
 

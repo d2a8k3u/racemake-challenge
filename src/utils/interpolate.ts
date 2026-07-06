@@ -29,18 +29,13 @@ export function resampleToPosGrid(
 
   const result: number[] = [];
   for (let i = 0; i < gridPoints; i++) {
-    const targetPos = gridPoints === 1
-      ? sorted[0].pos
-      : i / (gridPoints - 1);
+    const targetPos = gridPoints === 1 ? sorted[0].pos : i / (gridPoints - 1);
     result.push(sampleAt(sorted, targetPos));
   }
   return result;
 }
 
-function sampleAt(
-  sorted: { pos: number; value: number }[],
-  targetPos: number,
-): number {
+function sampleAt(sorted: { pos: number; value: number }[], targetPos: number): number {
   const first = sorted[0];
   const last = sorted[sorted.length - 1];
 

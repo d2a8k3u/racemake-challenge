@@ -1,5 +1,5 @@
-import { writeFileSync } from "fs";
-import { join } from "path";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 import type { WireFrame } from "../../src/types/telemetry";
 
 const FIXTURES_DIR = join(import.meta.dir);
@@ -20,7 +20,13 @@ function straightFrame(lap: number, pos: number, ts: number, spd: number = 200):
   };
 }
 
-function cornerFrame(lap: number, pos: number, ts: number, str: number, spd: number = 120): WireFrame {
+function cornerFrame(
+  lap: number,
+  pos: number,
+  ts: number,
+  str: number,
+  spd: number = 120,
+): WireFrame {
   return {
     ts,
     lap,
@@ -35,7 +41,12 @@ function cornerFrame(lap: number, pos: number, ts: number, str: number, spd: num
   };
 }
 
-function buildFullLap(lapNumber: number, frameCount: number, baseTs: number, intervalMs: number): WireFrame[] {
+function buildFullLap(
+  lapNumber: number,
+  frameCount: number,
+  baseTs: number,
+  intervalMs: number,
+): WireFrame[] {
   return Array.from({ length: frameCount }, (_, i) => {
     const pos = i / (frameCount - 1);
     const cornerCenter = 0.35;
@@ -87,9 +98,7 @@ writeFixture("edge-no-garbage.json", {
 });
 
 // edge-all-corrupted.json — every frame has spd > 400, so all are removed
-const corruptedFrames = Array.from({ length: 10 }, (_, i) =>
-  straightFrame(1, i / 9, i * 100, 500),
-);
+const corruptedFrames = Array.from({ length: 10 }, (_, i) => straightFrame(1, i / 9, i * 100, 500));
 writeFixture("edge-all-corrupted.json", {
   schema: "racemake.telemetry.stint.v1",
   frame_count: corruptedFrames.length,

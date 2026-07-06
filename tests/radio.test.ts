@@ -1,14 +1,13 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { generateRadioCall } from "../src/services/radio";
 import type {
-  TimeLossReport,
-  DetectedCorner,
   CornerDelta,
   CornerMetrics,
+  DetectedCorner,
   MetricDeltas,
   RootCause,
   RootCauseMetrics,
-  RadioCall,
+  TimeLossReport,
 } from "../src/types/analysis";
 
 function makeCornerMetrics(overrides: Partial<CornerMetrics> = {}): CornerMetrics {
@@ -164,62 +163,64 @@ describe("generateRadioCall — traceability", () => {
     const result = generateRadioCall(STANDARD_TIME_LOSS(), STANDARD_CORNERS(), 2, 3);
     const entry = result.traceability.find((e) => e.source === "cornerDelta.totalDeltaS");
     expect(entry).toBeDefined();
-    expect(entry!.value).toBe("0.386");
+    expect(entry?.value).toBe("0.386");
   });
 
   test("traceability includes corner ID", () => {
     const result = generateRadioCall(STANDARD_TIME_LOSS(), STANDARD_CORNERS(), 2, 3);
     const entry = result.traceability.find((e) => e.source === "worstCorner.cornerId");
     expect(entry).toBeDefined();
-    expect(entry!.value).toBe("C2");
+    expect(entry?.value).toBe("C2");
   });
 
   test("traceability includes apex position", () => {
     const result = generateRadioCall(STANDARD_TIME_LOSS(), STANDARD_CORNERS(), 2, 3);
     const entry = result.traceability.find((e) => e.source === "worstCorner.positionRange.apex");
     expect(entry).toBeDefined();
-    expect(entry!.value).toBe("0.205");
+    expect(entry?.value).toBe("0.205");
   });
 
   test("traceability includes best lap speed", () => {
     const result = generateRadioCall(STANDARD_TIME_LOSS(), STANDARD_CORNERS(), 2, 3);
     const entry = result.traceability.find((e) => e.source === "bestMetrics.minSpeedKmh");
     expect(entry).toBeDefined();
-    expect(entry!.value).toBe("214");
+    expect(entry?.value).toBe("214");
   });
 
   test("traceability includes worst lap speed", () => {
     const result = generateRadioCall(STANDARD_TIME_LOSS(), STANDARD_CORNERS(), 2, 3);
     const entry = result.traceability.find((e) => e.source === "worstMetrics.minSpeedKmh");
     expect(entry).toBeDefined();
-    expect(entry!.value).toBe("177");
+    expect(entry?.value).toBe("177");
   });
 
   test("traceability includes worst lap brake", () => {
     const result = generateRadioCall(STANDARD_TIME_LOSS(), STANDARD_CORNERS(), 2, 3);
     const entry = result.traceability.find((e) => e.source === "worstMetrics.maxBrake");
     expect(entry).toBeDefined();
-    expect(entry!.value).toBe("0.45");
+    expect(entry?.value).toBe("0.45");
   });
 
   test("traceability includes both lap numbers", () => {
     const result = generateRadioCall(STANDARD_TIME_LOSS(), STANDARD_CORNERS(), 2, 3);
     const bestLapEntry = result.traceability.find((e) => e.source === "bestLapNumber");
     expect(bestLapEntry).toBeDefined();
-    expect(bestLapEntry!.value).toBe("2");
+    expect(bestLapEntry?.value).toBe("2");
     const worstLapEntry = result.traceability.find((e) => e.source === "worstLapNumber");
     expect(worstLapEntry).toBeDefined();
-    expect(worstLapEntry!.value).toBe("3");
+    expect(worstLapEntry?.value).toBe("3");
   });
 
   test("traceability includes tyre temp and delta", () => {
     const result = generateRadioCall(STANDARD_TIME_LOSS(), STANDARD_CORNERS(), 2, 3);
-    const tempEntry = result.traceability.find((e) => e.source === "worstMetrics.tyreTempEntryC.fl");
+    const tempEntry = result.traceability.find(
+      (e) => e.source === "worstMetrics.tyreTempEntryC.fl",
+    );
     expect(tempEntry).toBeDefined();
-    expect(tempEntry!.value).toBe("117");
+    expect(tempEntry?.value).toBe("117");
     const deltaEntry = result.traceability.find((e) => e.source === "deltas.tyreTempDeltaC.fl");
     expect(deltaEntry).toBeDefined();
-    expect(deltaEntry!.value).toBe("22");
+    expect(deltaEntry?.value).toBe("22");
   });
 });
 
@@ -237,12 +238,14 @@ describe("generateRadioCall — no invented numbers", () => {
   test("every number in the zero-delta message appears in traceability values", () => {
     const timeLoss = makeTimeLossReport({
       totalDeltaS: 0,
-      cornerDeltas: [makeCornerDelta({
-        totalDeltaS: 0,
-        entryDeltaS: 0,
-        exitDeltaS: 0,
-        significance: "none",
-      })],
+      cornerDeltas: [
+        makeCornerDelta({
+          totalDeltaS: 0,
+          entryDeltaS: 0,
+          exitDeltaS: 0,
+          significance: "none",
+        }),
+      ],
     });
     const result = generateRadioCall(timeLoss, STANDARD_CORNERS(), 2, 3);
     const numbers = extractNumbersFromMessage(result.message);
@@ -258,9 +261,30 @@ describe("generateRadioCall — no invented numbers", () => {
       rootCause: makeRootCause({
         cornerId: "",
         metrics: {
-          bestLap: makeCornerMetrics({ minSpeedKmh: 0, maxBrake: 0, minThrottle: 0, maxSteeringDeg: 0, minGear: 0, tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 } }),
-          worstLap: makeCornerMetrics({ minSpeedKmh: 0, maxBrake: 0, minThrottle: 0, maxSteeringDeg: 0, minGear: 0, tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 } }),
-          deltas: { speedDeltaKmh: 0, brakeDelta: 0, throttleDelta: 0, steeringDeltaDeg: 0, gearDelta: 0, tyreTempDeltaC: { fl: 0, fr: 0, rl: 0, rr: 0 } },
+          bestLap: makeCornerMetrics({
+            minSpeedKmh: 0,
+            maxBrake: 0,
+            minThrottle: 0,
+            maxSteeringDeg: 0,
+            minGear: 0,
+            tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          }),
+          worstLap: makeCornerMetrics({
+            minSpeedKmh: 0,
+            maxBrake: 0,
+            minThrottle: 0,
+            maxSteeringDeg: 0,
+            minGear: 0,
+            tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          }),
+          deltas: {
+            speedDeltaKmh: 0,
+            brakeDelta: 0,
+            throttleDelta: 0,
+            steeringDeltaDeg: 0,
+            gearDelta: 0,
+            tyreTempDeltaC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          },
         },
         explanation: "No corners detected; unable to localize time loss.",
       }),
@@ -277,9 +301,30 @@ describe("generateRadioCall — no invented numbers", () => {
     const timeLoss = makeTimeLossReport({
       rootCause: makeRootCause({
         metrics: {
-          bestLap: makeCornerMetrics({ minSpeedKmh: 0, maxBrake: 0, minThrottle: 0, maxSteeringDeg: 0, minGear: 0, tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 } }),
-          worstLap: makeCornerMetrics({ minSpeedKmh: 0, maxBrake: 0, minThrottle: 0, maxSteeringDeg: 0, minGear: 0, tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 } }),
-          deltas: { speedDeltaKmh: 0, brakeDelta: 0, throttleDelta: 0, steeringDeltaDeg: 0, gearDelta: 0, tyreTempDeltaC: { fl: 0, fr: 0, rl: 0, rr: 0 } },
+          bestLap: makeCornerMetrics({
+            minSpeedKmh: 0,
+            maxBrake: 0,
+            minThrottle: 0,
+            maxSteeringDeg: 0,
+            minGear: 0,
+            tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          }),
+          worstLap: makeCornerMetrics({
+            minSpeedKmh: 0,
+            maxBrake: 0,
+            minThrottle: 0,
+            maxSteeringDeg: 0,
+            minGear: 0,
+            tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          }),
+          deltas: {
+            speedDeltaKmh: 0,
+            brakeDelta: 0,
+            throttleDelta: 0,
+            steeringDeltaDeg: 0,
+            gearDelta: 0,
+            tyreTempDeltaC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          },
         },
       }),
     });
@@ -329,12 +374,14 @@ describe("generateRadioCall — edge cases", () => {
   test("zero total delta produces valid radio call without crashing", () => {
     const timeLoss = makeTimeLossReport({
       totalDeltaS: 0,
-      cornerDeltas: [makeCornerDelta({
-        totalDeltaS: 0,
-        entryDeltaS: 0,
-        exitDeltaS: 0,
-        significance: "none",
-      })],
+      cornerDeltas: [
+        makeCornerDelta({
+          totalDeltaS: 0,
+          entryDeltaS: 0,
+          exitDeltaS: 0,
+          significance: "none",
+        }),
+      ],
     });
     const result = generateRadioCall(timeLoss, STANDARD_CORNERS(), 2, 3);
     expect(typeof result.message).toBe("string");
@@ -349,9 +396,30 @@ describe("generateRadioCall — edge cases", () => {
       rootCause: makeRootCause({
         cornerId: "",
         metrics: {
-          bestLap: makeCornerMetrics({ minSpeedKmh: 0, maxBrake: 0, minThrottle: 0, maxSteeringDeg: 0, minGear: 0, tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 } }),
-          worstLap: makeCornerMetrics({ minSpeedKmh: 0, maxBrake: 0, minThrottle: 0, maxSteeringDeg: 0, minGear: 0, tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 } }),
-          deltas: { speedDeltaKmh: 0, brakeDelta: 0, throttleDelta: 0, steeringDeltaDeg: 0, gearDelta: 0, tyreTempDeltaC: { fl: 0, fr: 0, rl: 0, rr: 0 } },
+          bestLap: makeCornerMetrics({
+            minSpeedKmh: 0,
+            maxBrake: 0,
+            minThrottle: 0,
+            maxSteeringDeg: 0,
+            minGear: 0,
+            tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          }),
+          worstLap: makeCornerMetrics({
+            minSpeedKmh: 0,
+            maxBrake: 0,
+            minThrottle: 0,
+            maxSteeringDeg: 0,
+            minGear: 0,
+            tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          }),
+          deltas: {
+            speedDeltaKmh: 0,
+            brakeDelta: 0,
+            throttleDelta: 0,
+            steeringDeltaDeg: 0,
+            gearDelta: 0,
+            tyreTempDeltaC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          },
         },
         explanation: "No corners detected; unable to localize time loss.",
       }),
@@ -367,9 +435,30 @@ describe("generateRadioCall — edge cases", () => {
     const timeLoss = makeTimeLossReport({
       rootCause: makeRootCause({
         metrics: {
-          bestLap: makeCornerMetrics({ minSpeedKmh: 0, maxBrake: 0, minThrottle: 0, maxSteeringDeg: 0, minGear: 0, tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 } }),
-          worstLap: makeCornerMetrics({ minSpeedKmh: 0, maxBrake: 0, minThrottle: 0, maxSteeringDeg: 0, minGear: 0, tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 } }),
-          deltas: { speedDeltaKmh: 0, brakeDelta: 0, throttleDelta: 0, steeringDeltaDeg: 0, gearDelta: 0, tyreTempDeltaC: { fl: 0, fr: 0, rl: 0, rr: 0 } },
+          bestLap: makeCornerMetrics({
+            minSpeedKmh: 0,
+            maxBrake: 0,
+            minThrottle: 0,
+            maxSteeringDeg: 0,
+            minGear: 0,
+            tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          }),
+          worstLap: makeCornerMetrics({
+            minSpeedKmh: 0,
+            maxBrake: 0,
+            minThrottle: 0,
+            maxSteeringDeg: 0,
+            minGear: 0,
+            tyreTempEntryC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          }),
+          deltas: {
+            speedDeltaKmh: 0,
+            brakeDelta: 0,
+            throttleDelta: 0,
+            steeringDeltaDeg: 0,
+            gearDelta: 0,
+            tyreTempDeltaC: { fl: 0, fr: 0, rl: 0, rr: 0 },
+          },
         },
       }),
     });

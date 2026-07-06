@@ -1,8 +1,8 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import {
+  interpolateTimeAtPos,
   linearInterpolate,
   resampleToPosGrid,
-  interpolateTimeAtPos,
 } from "../src/utils/interpolate";
 
 describe("linearInterpolate", () => {

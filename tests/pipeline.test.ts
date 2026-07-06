@@ -1,6 +1,6 @@
-import { expect, test, describe } from "bun:test";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { runAnalysisPipeline } from "../src/routes/analysis";
 import type { AnalysisResult } from "../src/types/analysis";
 
@@ -93,7 +93,7 @@ describe("runAnalysisPipeline — synthetic 5-corner fixture", () => {
 
   test("corner apex positions match the designed 0.10 / 0.25 / 0.45 / 0.65 / 0.85 layout", () => {
     const apexPositions = result.corners.map((c) => c.positionRange.apex).sort((a, b) => a - b);
-    const designed = [0.10, 0.25, 0.45, 0.65, 0.85];
+    const designed = [0.1, 0.25, 0.45, 0.65, 0.85];
     for (let i = 0; i < designed.length; i++) {
       expect(apexPositions[i]).toBeCloseTo(designed[i], 1);
     }

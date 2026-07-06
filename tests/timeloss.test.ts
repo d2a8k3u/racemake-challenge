@@ -1,8 +1,8 @@
-import { expect, test, describe } from "bun:test";
-import { analyzeTimeLoss } from "../src/services/timeloss";
-import type { CleanedFrame } from "../src/types/telemetry";
-import type { DetectedCorner } from "../src/types/analysis";
+import { describe, expect, test } from "bun:test";
 import { detectCorners } from "../src/services/corners";
+import { analyzeTimeLoss } from "../src/services/timeloss";
+import type { DetectedCorner } from "../src/types/analysis";
+import type { CleanedFrame } from "../src/types/telemetry";
 
 function makeFrame(overrides: Partial<CleanedFrame> = {}): CleanedFrame {
   return {
@@ -130,15 +130,7 @@ function detectCornersForLaps(laps: CleanedFrame[][]): DetectedCorner[] {
 describe("analyzeTimeLoss — simple synthetic data", () => {
   test("returns report with total delta matching synthetic time loss", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     expect(corners.length).toBeGreaterThanOrEqual(1);
 
@@ -154,22 +146,14 @@ describe("analyzeTimeLoss — simple synthetic data", () => {
 
   test("attributes time loss to the slow corner, not elsewhere", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
     const slowCorner = report.cornerDeltas.find((c) => c.isWorstCorner);
     expect(slowCorner).toBeDefined();
-    expect(slowCorner!.totalDeltaS).toBeGreaterThan(0.05);
-    expect(slowCorner!.significance).not.toBe("none");
+    expect(slowCorner?.totalDeltaS).toBeGreaterThan(0.05);
+    expect(slowCorner?.significance).not.toBe("none");
   });
 
   test("best lap time equals the cumulative time at pos=1.0 for the best lap", () => {
@@ -210,15 +194,7 @@ describe("analyzeTimeLoss — edge cases", () => {
 
   test("single corner produces single cornerDelta with isWorstCorner true", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
@@ -244,43 +220,22 @@ describe("analyzeTimeLoss — edge cases", () => {
 describe("analyzeTimeLoss — sanity check", () => {
   test("sanity check passes when corner deltas sum within 0.1s of total delta", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
     expect(report.sanityCheck.passed).toBe(true);
-    const diff = Math.abs(
-      report.sanityCheck.sumOfCornerDeltasS - report.sanityCheck.totalDeltaS,
-    );
+    const diff = Math.abs(report.sanityCheck.sumOfCornerDeltasS - report.sanityCheck.totalDeltaS);
     expect(diff).toBeLessThan(0.1);
   });
 
   test("sanity check sum equals sum of corner totalDeltaS", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
-    const manualSum = report.cornerDeltas.reduce(
-      (acc, c) => acc + c.totalDeltaS,
-      0,
-    );
+    const manualSum = report.cornerDeltas.reduce((acc, c) => acc + c.totalDeltaS, 0);
     expect(report.sanityCheck.sumOfCornerDeltasS).toBeCloseTo(manualSum, 5);
   });
 });
@@ -288,21 +243,13 @@ describe("analyzeTimeLoss — sanity check", () => {
 describe("analyzeTimeLoss — root cause", () => {
   test("root cause references the worst corner and contains explanation", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
     const worstCorner = report.cornerDeltas.find((c) => c.isWorstCorner);
     expect(worstCorner).toBeDefined();
-    expect(report.rootCause.cornerId).toBe(worstCorner!.cornerId);
+    expect(report.rootCause.cornerId).toBe(worstCorner?.cornerId);
     expect(report.rootCause.explanation.length).toBeGreaterThan(0);
     expect(report.rootCause.metrics.bestLap).toBeDefined();
     expect(report.rootCause.metrics.worstLap).toBeDefined();
@@ -311,15 +258,7 @@ describe("analyzeTimeLoss — root cause", () => {
 
   test("root cause deltas are worst minus best", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
@@ -328,36 +267,18 @@ describe("analyzeTimeLoss — root cause", () => {
 
   test("root cause explanation mentions corner id and direction", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
-    expect(report.rootCause.explanation).toContain(
-      report.rootCause.cornerId,
-    );
+    expect(report.rootCause.explanation).toContain(report.rootCause.cornerId);
   });
 });
 
 describe("analyzeTimeLoss — corner phase deltas", () => {
   test("apexDelta equals entryDelta + exitDelta or is zero-based segment", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
@@ -383,56 +304,31 @@ describe("analyzeTimeLoss — corner phase deltas", () => {
 
   test("significance is high when delta is >= 0.1s", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      200,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 200);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
     const worst = report.cornerDeltas.find((c) => c.isWorstCorner);
     expect(worst).toBeDefined();
-    expect(worst!.significance).toBe("high");
+    expect(worst?.significance).toBe("high");
   });
 });
 
 describe("analyzeTimeLoss — gap detection", () => {
   test("hasGap is true when a frame gap > 500ms exists in the corner pos range", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildSlowLapWithGap(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      0.3,
-      800,
-    );
+    const worstLap = buildSlowLapWithGap(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 0.3, 800);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
     const worstCorner = report.cornerDeltas.find((c) => c.isWorstCorner);
     expect(worstCorner).toBeDefined();
-    expect(worstCorner!.hasGap).toBe(true);
+    expect(worstCorner?.hasGap).toBe(true);
   });
 
   test("hasGap is false when no gaps > 500ms exist in corner range", () => {
     const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [RIGHT_CORNER]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.3,
-      0.05,
-      150,
-    );
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.3, 0.05, 150);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     const report = analyzeTimeLoss(bestLap, worstLap, corners);
 
@@ -448,20 +344,8 @@ describe("analyzeTimeLoss — real sample data comparison", () => {
     const cornerB: CornerSpec = { centerPos: 0.55, peakStr: -25, width: 0.05 };
     const cornerC: CornerSpec = { centerPos: 0.8, peakStr: 35, width: 0.04 };
 
-    const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [
-      cornerA,
-      cornerB,
-      cornerC,
-    ]);
-    const worstLap = buildLapWithSlowCorner(
-      2,
-      0,
-      FRAME_COUNT,
-      INTERVAL_MS,
-      0.55,
-      0.05,
-      160,
-    );
+    const bestLap = buildLap(1, 0, FRAME_COUNT, INTERVAL_MS, [cornerA, cornerB, cornerC]);
+    const worstLap = buildLapWithSlowCorner(2, 0, FRAME_COUNT, INTERVAL_MS, 0.55, 0.05, 160);
     const corners = detectCornersForLaps([bestLap, worstLap]);
     expect(corners.length).toBeGreaterThanOrEqual(1);
 
@@ -473,6 +357,6 @@ describe("analyzeTimeLoss — real sample data comparison", () => {
 
     const worst = report.cornerDeltas.find((c) => c.isWorstCorner);
     expect(worst).toBeDefined();
-    expect(worst!.totalDeltaS).toBeGreaterThan(0);
+    expect(worst?.totalDeltaS).toBeGreaterThan(0);
   });
 });

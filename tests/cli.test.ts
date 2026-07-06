@@ -1,14 +1,14 @@
-import { expect, test, describe, afterEach } from "bun:test";
-import { join } from "path";
-import { mkdtemp, rm, writeFile, readFile } from "fs/promises";
-import { tmpdir } from "os";
-import type { WireFrame } from "../src/types/telemetry";
+import { afterEach, describe, expect, test } from "bun:test";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { AnalysisResult } from "../src/types/analysis";
+import type { WireFrame } from "../src/types/telemetry";
 
 const PROJECT_ROOT = join(import.meta.dir, "..");
 const INDEX_TS = join(PROJECT_ROOT, "src", "index.ts");
 
-const TYRE_SCALE = 10;
+const _TYRE_SCALE = 10;
 const LAP_FRAMES = 60;
 
 function frame(
@@ -47,9 +47,8 @@ function buildLapFrames(
     const cornerWidth = 0.06;
     const peakSteering = 35;
     const dist = Math.abs(lapProgress - cornerCenter);
-    const steering = dist < cornerWidth
-      ? peakSteering * Math.cos((dist / cornerWidth) * (Math.PI / 2))
-      : 0;
+    const steering =
+      dist < cornerWidth ? peakSteering * Math.cos((dist / cornerWidth) * (Math.PI / 2)) : 0;
     return frame(lap, i, count, baseTs, intervalMs, speedKmh, steering);
   });
 }

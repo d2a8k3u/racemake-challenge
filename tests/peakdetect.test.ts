@@ -1,4 +1,4 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { findPeaks } from "../src/utils/peakdetect";
 
 describe("findPeaks", () => {
@@ -41,9 +41,7 @@ describe("findPeaks", () => {
       { pos: 1, magnitude: 0 },
     ];
     const peaks = findPeaks(values, 0.2, 0.05);
-    expect(peaks.map((p) => p.pos)).toEqual(
-      [...peaks.map((p) => p.pos)].sort((a, b) => a - b),
-    );
+    expect(peaks.map((p) => p.pos)).toEqual([...peaks.map((p) => p.pos)].sort((a, b) => a - b));
   });
 
   test("filters out peaks below threshold", () => {

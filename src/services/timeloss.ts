@@ -1,13 +1,13 @@
-import type { CleanedFrame } from "../types/telemetry";
 import type {
-  DetectedCorner,
   CornerDelta,
   CornerMetrics,
+  DetectedCorner,
   MetricDeltas,
   RootCause,
   RootCauseMetrics,
   TimeLossReport,
 } from "../types/analysis";
+import type { CleanedFrame } from "../types/telemetry";
 import { interpolateTimeAtPos } from "../utils/interpolate";
 import { guardNaN } from "../utils/math";
 
@@ -57,23 +57,23 @@ function computeCornerDelta(
   const worstApex = timeAtPos(worstPairs, apex);
   const worstExit = timeAtPos(worstPairs, exit);
 
-  const entryDeltaS =
-    (worstApex - worstEntry) - (bestApex - bestEntry);
-  const exitDeltaS =
-    (worstExit - worstApex) - (bestExit - bestApex);
+  const entryDeltaS = worstApex - worstEntry - (bestApex - bestEntry);
+  const exitDeltaS = worstExit - worstApex - (bestExit - bestApex);
   const totalDeltaS = entryDeltaS + exitDeltaS;
 
   // Overlaps entry/exit — not additive. totalDeltaS stays entry + exit.
   const APEX_WINDOW = 0.005;
   const apexLow = Math.max(entry, apex - APEX_WINDOW);
   const apexHigh = Math.min(exit, apex + APEX_WINDOW);
-  const apexDeltaS = apexHigh > apexLow
-    ? ((timeAtPos(worstPairs, apexHigh) - timeAtPos(worstPairs, apexLow)) -
-      (timeAtPos(bestPairs, apexHigh) - timeAtPos(bestPairs, apexLow)))
-    : 0;
+  const apexDeltaS =
+    apexHigh > apexLow
+      ? timeAtPos(worstPairs, apexHigh) -
+        timeAtPos(worstPairs, apexLow) -
+        (timeAtPos(bestPairs, apexHigh) - timeAtPos(bestPairs, apexLow))
+      : 0;
 
-  const hasGap = detectGapInRange(bestFrames, entry, exit) ||
-    detectGapInRange(worstFrames, entry, exit);
+  const hasGap =
+    detectGapInRange(bestFrames, entry, exit) || detectGapInRange(worstFrames, entry, exit);
 
   return {
     cornerId: corner.cornerId,
@@ -87,14 +87,8 @@ function computeCornerDelta(
   };
 }
 
-function detectGapInRange(
-  frames: CleanedFrame[],
-  entryPos: number,
-  exitPos: number,
-): boolean {
-  const inRange = frames.filter(
-    (f) => f.pos >= entryPos && f.pos <= exitPos,
-  );
+function detectGapInRange(frames: CleanedFrame[], entryPos: number, exitPos: number): boolean {
+  const inRange = frames.filter((f) => f.pos >= entryPos && f.pos <= exitPos);
   for (let i = 1; i < inRange.length; i++) {
     const gap = inRange[i].ts - inRange[i - 1].ts;
     if (gap > GAP_THRESHOLD_MS) return true;
@@ -119,14 +113,9 @@ function markWorstCorner(deltas: CornerDelta[]): CornerDelta[] {
   }));
 }
 
-function extractCornerFrames(
-  frames: CleanedFrame[],
-  corner: DetectedCorner,
-): CleanedFrame[] {
+function extractCornerFrames(frames: CleanedFrame[], corner: DetectedCorner): CleanedFrame[] {
   const { entry, exit } = corner.positionRange;
-  return frames.filter(
-    (f) => f.pos >= entry && f.pos <= exit,
-  );
+  return frames.filter((f) => f.pos >= entry && f.pos <= exit);
 }
 
 function computeCornerMetrics(frames: CleanedFrame[]): CornerMetrics {
@@ -157,10 +146,7 @@ function computeCornerMetrics(frames: CleanedFrame[]): CornerMetrics {
   };
 }
 
-function computeMetricDeltas(
-  best: CornerMetrics,
-  worst: CornerMetrics,
-): MetricDeltas {
+function computeMetricDeltas(best: CornerMetrics, worst: CornerMetrics): MetricDeltas {
   return {
     speedDeltaKmh: worst.minSpeedKmh - best.minSpeedKmh,
     brakeDelta: worst.maxBrake - best.maxBrake,
@@ -180,26 +166,31 @@ function buildExplanation(
   corner: DetectedCorner,
   totalDeltaS: number,
   deltas: MetricDeltas,
-  worst: CornerMetrics,
-  best: CornerMetrics,
+  _worst: CornerMetrics,
+  _best: CornerMetrics,
 ): string {
-  const speedComparison = deltas.speedDeltaKmh < 0
-    ? `Worst lap was ${Math.abs(deltas.speedDeltaKmh).toFixed(1)} km/h slower at minimum`
-    : `Worst lap was ${deltas.speedDeltaKmh.toFixed(1)} km/h faster at minimum (unexpected)`;
+  const speedComparison =
+    deltas.speedDeltaKmh < 0
+      ? `Worst lap was ${Math.abs(deltas.speedDeltaKmh).toFixed(1)} km/h slower at minimum`
+      : `Worst lap was ${deltas.speedDeltaKmh.toFixed(1)} km/h faster at minimum (unexpected)`;
 
-  const brakeComparison = deltas.brakeDelta > 0.01
-    ? `Worst lap braked harder (+${deltas.brakeDelta.toFixed(2)})`
-    : deltas.brakeDelta < -0.01
-    ? `Worst lap braked less (${deltas.brakeDelta.toFixed(2)})`
-    : `Brake input similar (${deltas.brakeDelta.toFixed(2)})`;
+  const brakeComparison =
+    deltas.brakeDelta > 0.01
+      ? `Worst lap braked harder (+${deltas.brakeDelta.toFixed(2)})`
+      : deltas.brakeDelta < -0.01
+        ? `Worst lap braked less (${deltas.brakeDelta.toFixed(2)})`
+        : `Brake input similar (${deltas.brakeDelta.toFixed(2)})`;
 
-  const tyreDelta = (deltas.tyreTempDeltaC.fl +
-    deltas.tyreTempDeltaC.fr +
-    deltas.tyreTempDeltaC.rl +
-    deltas.tyreTempDeltaC.rr) / 4;
-  const tyreComparison = Math.abs(tyreDelta) > 1
-    ? `Tyre temps avg ${tyreDelta > 0 ? "+" : ""}${tyreDelta.toFixed(1)}°C on worst lap`
-    : `Tyre temps similar (${tyreDelta.toFixed(1)}°C avg)`;
+  const tyreDelta =
+    (deltas.tyreTempDeltaC.fl +
+      deltas.tyreTempDeltaC.fr +
+      deltas.tyreTempDeltaC.rl +
+      deltas.tyreTempDeltaC.rr) /
+    4;
+  const tyreComparison =
+    Math.abs(tyreDelta) > 1
+      ? `Tyre temps avg ${tyreDelta > 0 ? "+" : ""}${tyreDelta.toFixed(1)}°C on worst lap`
+      : `Tyre temps similar (${tyreDelta.toFixed(1)}°C avg)`;
 
   return `At ${corner.cornerId} (${corner.direction} at pos ${corner.positionRange.apex.toFixed(4)}), ${totalDeltaS.toFixed(3)}s lost. ${speedComparison}. ${brakeComparison}. ${tyreComparison}.`;
 }
@@ -210,20 +201,10 @@ function buildRootCause(
   bestFrames: CleanedFrame[],
   worstFrames: CleanedFrame[],
 ): RootCause {
-  const bestMetrics = computeCornerMetrics(
-    extractCornerFrames(bestFrames, corner),
-  );
-  const worstMetrics = computeCornerMetrics(
-    extractCornerFrames(worstFrames, corner),
-  );
+  const bestMetrics = computeCornerMetrics(extractCornerFrames(bestFrames, corner));
+  const worstMetrics = computeCornerMetrics(extractCornerFrames(worstFrames, corner));
   const deltas = computeMetricDeltas(bestMetrics, worstMetrics);
-  const explanation = buildExplanation(
-    corner,
-    totalDeltaS,
-    deltas,
-    worstMetrics,
-    bestMetrics,
-  );
+  const explanation = buildExplanation(corner, totalDeltaS, deltas, worstMetrics, bestMetrics);
 
   const metrics: RootCauseMetrics = {
     bestLap: bestMetrics,
@@ -246,31 +227,18 @@ export function analyzeTimeLoss(
   const bestPairs = buildPosTimePairs(bestLapFrames);
   const worstPairs = buildPosTimePairs(worstLapFrames);
 
-  const bestLapTimeS = bestPairs.length > 0
-    ? bestPairs[bestPairs.length - 1].t
-    : 0;
-  const worstLapTimeS = worstPairs.length > 0
-    ? worstPairs[worstPairs.length - 1].t
-    : 0;
+  const bestLapTimeS = bestPairs.length > 0 ? bestPairs[bestPairs.length - 1].t : 0;
+  const worstLapTimeS = worstPairs.length > 0 ? worstPairs[worstPairs.length - 1].t : 0;
 
   const bestLap = bestLapFrames.length > 0 ? bestLapFrames[0].lap : 0;
   const worstLap = worstLapFrames.length > 0 ? worstLapFrames[0].lap : 0;
 
   const rawCornerDeltas = corners.map((corner) =>
-    computeCornerDelta(
-      corner,
-      bestPairs,
-      worstPairs,
-      bestLapFrames,
-      worstLapFrames,
-    ),
+    computeCornerDelta(corner, bestPairs, worstPairs, bestLapFrames, worstLapFrames),
   );
   const cornerDeltas = markWorstCorner(rawCornerDeltas);
 
-  const sumOfCornerDeltasS = cornerDeltas.reduce(
-    (acc, cd) => acc + cd.totalDeltaS,
-    0,
-  );
+  const sumOfCornerDeltasS = cornerDeltas.reduce((acc, cd) => acc + cd.totalDeltaS, 0);
 
   // Total delta is computed from final positions to reflect the actual lap time
   // difference. The grid-point average would only be valid if both laps spanned
@@ -287,25 +255,32 @@ export function analyzeTimeLoss(
   const worstCornerDelta = cornerDeltas.find((cd) => cd.isWorstCorner);
   let rootCause: RootCause;
   if (worstCornerDelta && corners.length > 0) {
-    const worstCorner = corners.find((c) =>
-      c.cornerId === worstCornerDelta.cornerId
-    )!;
-    rootCause = buildRootCause(
-      worstCorner,
-      worstCornerDelta.totalDeltaS,
-      bestLapFrames,
-      worstLapFrames,
-    );
+    const worstCorner = corners.find((c) => c.cornerId === worstCornerDelta.cornerId);
+    if (!worstCorner) {
+      rootCause = {
+        cornerId: "",
+        metrics: {
+          bestLap: computeCornerMetrics([]),
+          worstLap: computeCornerMetrics([]),
+          deltas: computeMetricDeltas(computeCornerMetrics([]), computeCornerMetrics([])),
+        },
+        explanation: "Worst corner not found in corner list; unable to localize time loss.",
+      };
+    } else {
+      rootCause = buildRootCause(
+        worstCorner,
+        worstCornerDelta.totalDeltaS,
+        bestLapFrames,
+        worstLapFrames,
+      );
+    }
   } else {
     rootCause = {
       cornerId: "",
       metrics: {
         bestLap: computeCornerMetrics([]),
         worstLap: computeCornerMetrics([]),
-        deltas: computeMetricDeltas(
-          computeCornerMetrics([]),
-          computeCornerMetrics([]),
-        ),
+        deltas: computeMetricDeltas(computeCornerMetrics([]), computeCornerMetrics([])),
       },
       explanation: "No corners detected; unable to localize time loss.",
     };
