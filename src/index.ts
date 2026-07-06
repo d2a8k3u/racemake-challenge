@@ -1,0 +1,1 @@
+console.log("Racemake telemetry service — run with: bun run src/server.ts");
