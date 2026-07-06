@@ -1,0 +1,23 @@
+{
+  "schema": "racemake.telemetry.stint.v1",
+  "frame_count": 1,
+  "frames": [
+    {
+      "ts": 0,
+      "lap": 1,
+      "pos": 0,
+      "spd": 200,
+      "thr": 0.95,
+      "brk": 0,
+      "str": 0,
+      "gear": 4,
+      "rpm": 6000,
+      "tyres": {
+        "fl": 900,
+        "fr": 900,
+        "rl": 900,
+        "rr": 900
+      }
+    }
+  ]
+}
