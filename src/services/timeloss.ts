@@ -62,6 +62,16 @@ function computeCornerDelta(
   const exitDeltaS =
     (worstExit - worstApex) - (bestExit - bestApex);
   const totalDeltaS = entryDeltaS + exitDeltaS;
+
+  // Overlaps entry/exit — not additive. totalDeltaS stays entry + exit.
+  const APEX_WINDOW = 0.005;
+  const apexLow = Math.max(entry, apex - APEX_WINDOW);
+  const apexHigh = Math.min(exit, apex + APEX_WINDOW);
+  const apexDeltaS = apexHigh > apexLow
+    ? ((timeAtPos(worstPairs, apexHigh) - timeAtPos(worstPairs, apexLow)) -
+      (timeAtPos(bestPairs, apexHigh) - timeAtPos(bestPairs, apexLow)))
+    : 0;
+
   const hasGap = detectGapInRange(bestFrames, entry, exit) ||
     detectGapInRange(worstFrames, entry, exit);
 
@@ -69,7 +79,7 @@ function computeCornerDelta(
     cornerId: corner.cornerId,
     totalDeltaS,
     entryDeltaS,
-    apexDeltaS: 0,
+    apexDeltaS,
     exitDeltaS,
     isWorstCorner: false,
     significance: classifySignificance(totalDeltaS),

@@ -62,23 +62,30 @@ export function generateRadioCall(
   const traceability: TraceabilityEntry[] = [];
   const confidenceFlags: string[] = [];
 
-  // --- Total delta ---
-  // Prefer the worst corner delta (absolute value); fall back to the report
-  // total when no corner deltas exist.
+  // --- Total lap delta (leads the headline) ---
   const worstCornerDelta =
     timeLoss.cornerDeltas.find((cd) => cd.isWorstCorner) ??
     timeLoss.cornerDeltas[0];
 
-  const totalDeltaS = worstCornerDelta
+  const lapTotalDeltaS = timeLoss.totalDeltaS;
+  const lapTotalDeltaStr = fmtDelta(lapTotalDeltaS);
+  const worstCornerTotalS = worstCornerDelta
     ? worstCornerDelta.totalDeltaS
-    : timeLoss.totalDeltaS;
-  const totalDeltaStr = fmtDelta(totalDeltaS);
+    : lapTotalDeltaS;
+  const worstCornerDeltaStr = fmtDelta(worstCornerTotalS);
 
   traceability.push({
-    claim: totalDeltaStr,
-    source: "cornerDelta.totalDeltaS",
-    value: totalDeltaStr,
+    claim: lapTotalDeltaStr,
+    source: "timeLoss.totalDeltaS",
+    value: lapTotalDeltaStr,
   });
+  if (worstCornerDelta !== undefined) {
+    traceability.push({
+      claim: worstCornerDeltaStr,
+      source: "cornerDelta.totalDeltaS",
+      value: worstCornerDeltaStr,
+    });
+  }
 
   // --- Lap numbers ---
   const bestLapStr = fmtLap(bestLapNumber);
@@ -215,16 +222,18 @@ export function generateRadioCall(
     }
 
     // Assemble the full message
+    const headline =
+      `Lost ${lapTotalDeltaStr}s total — most of it (${worstCornerDeltaStr}) at ${cornerId} (apex pos ${apexPosStr}). `;
+
     message =
-      `Lost ${totalDeltaStr}s between Lap ${bestLapStr} and Lap ${worstLapStr}. ` +
-      `Biggest loss at ${cornerId} (apex pos ${apexPosStr}): ` +
-      `best lap ${bestBrakeDesc} at ${bestSpeedStr} km/h, ` +
-      `worst lap ${worstBrakeDesc} at ${worstSpeedStr} km/h. ` +
+      headline +
+      `Best lap (Lap ${bestLapStr}) was ${bestBrakeDesc} at ${bestSpeedStr} km/h, ` +
+      `worst lap (Lap ${worstLapStr}) ${worstBrakeDesc} at ${worstSpeedStr} km/h. ` +
       `Tyres ${tyreTempStr}°C (${tyreDeltaDesc}).`;
   } else {
     // No corners detected — concise fallback message
     message =
-      `Lost ${totalDeltaStr}s between Lap ${bestLapStr} and Lap ${worstLapStr}. ` +
+      `Lost ${lapTotalDeltaStr}s total between Lap ${bestLapStr} and Lap ${worstLapStr}. ` +
       `No corners detected; unable to localize time loss.`;
   }
 
