@@ -108,10 +108,13 @@ export function cleanFrames(frames: DecodedFrame[]): CleanResult {
     };
   }
 
+  // Defensive sort by ts — recorder should be ordered, but don't assume.
+  const sorted = [...frames].sort((a, b) => a.ts - b.ts);
+
   const validFrames: CleanedFrame[] = [];
   const removedFrames: RemovedFrameDetail[] = [];
 
-  for (const frame of frames) {
+  for (const frame of sorted) {
     const boundsViolation = isPhysicallyPlausible(frame);
     if (boundsViolation !== null) {
       removedFrames.push(buildRemovedDetail(frame, boundsViolation));
