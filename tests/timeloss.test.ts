@@ -249,7 +249,8 @@ describe("analyzeTimeLoss — root cause", () => {
 
     const worstCorner = report.cornerDeltas.find((c) => c.isWorstCorner);
     expect(worstCorner).toBeDefined();
-    expect(report.rootCause.cornerId).toBe(worstCorner?.cornerId);
+    if (!worstCorner) throw new Error("worst corner not found");
+    expect(report.rootCause.cornerId).toBe(worstCorner.cornerId);
     expect(report.rootCause.explanation.length).toBeGreaterThan(0);
     expect(report.rootCause.metrics.bestLap).toBeDefined();
     expect(report.rootCause.metrics.worstLap).toBeDefined();

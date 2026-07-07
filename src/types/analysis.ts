@@ -1,26 +1,26 @@
-export interface RecorderFinding {
+export type RecorderFinding = {
   field: string;
   description: string;
   scaleFactor: number;
   example: { raw: number; decoded: number; unit: string };
-}
+};
 
-export interface RemovedFrameDetail {
+export type RemovedFrameDetail = {
   ts: number;
   reason: string;
   values: Record<string, number>;
-}
+};
 
-export interface DropoutDetail {
+export type DropoutDetail = {
   lap: number;
   tsBefore: number;
   tsAfter: number;
   gapMs: number;
   posBefore: number;
   posAfter: number;
-}
+};
 
-export interface DataQuality {
+export type DataQuality = {
   totalFrames: number;
   validFrames: number;
   removedFrames: number;
@@ -33,9 +33,9 @@ export interface DataQuality {
     minMs: number;
     maxMs: number;
   };
-}
+};
 
-export interface LapReport {
+export type LapReport = {
   lapNumber: number;
   classification: "full" | "out-lap" | "in-lap";
   frames: number;
@@ -47,9 +47,9 @@ export interface LapReport {
   hasDropout: boolean;
   dropoutMs: number;
   isFullRacingLap: boolean;
-}
+};
 
-export interface DetectedCorner {
+export type DetectedCorner = {
   cornerId: string;
   positionRange: { entry: number; apex: number; exit: number };
   direction: "left" | "right";
@@ -57,11 +57,11 @@ export interface DetectedCorner {
   consensusStrength: number;
   detectedOnLaps: number[];
   confidence: "high" | "medium" | "low";
-}
+};
 
 export type CornerPhase = "entry" | "apex" | "exit";
 
-export interface CornerDelta {
+export type CornerDelta = {
   cornerId: string;
   totalDeltaS: number;
   entryDeltaS: number;
@@ -70,39 +70,39 @@ export interface CornerDelta {
   isWorstCorner: boolean;
   significance: "none" | "low" | "high";
   hasGap: boolean;
-}
+};
 
-export interface CornerMetrics {
+export type CornerMetrics = {
   minSpeedKmh: number;
   maxBrake: number;
   minThrottle: number;
   maxSteeringDeg: number;
   minGear: number;
   tyreTempEntryC: { fl: number; fr: number; rl: number; rr: number };
-}
+};
 
-export interface MetricDeltas {
+export type MetricDeltas = {
   speedDeltaKmh: number;
   brakeDelta: number;
   throttleDelta: number;
   steeringDeltaDeg: number;
   gearDelta: number;
   tyreTempDeltaC: { fl: number; fr: number; rl: number; rr: number };
-}
+};
 
-export interface RootCauseMetrics {
+export type RootCauseMetrics = {
   bestLap: CornerMetrics;
   worstLap: CornerMetrics;
   deltas: MetricDeltas;
-}
+};
 
-export interface RootCause {
+export type RootCause = {
   cornerId: string;
   metrics: RootCauseMetrics;
   explanation: string;
-}
+};
 
-export interface TimeLossReport {
+export type TimeLossReport = {
   bestLap: number;
   worstLap: number;
   bestLapTimeS: number;
@@ -111,25 +111,25 @@ export interface TimeLossReport {
   cornerDeltas: CornerDelta[];
   rootCause: RootCause;
   sanityCheck: { sumOfCornerDeltasS: number; totalDeltaS: number; passed: boolean };
-}
+};
 
-export interface TraceabilityEntry {
+export type TraceabilityEntry = {
   claim: string;
   source: string;
   value: string;
-}
+};
 
-export interface RadioCall {
+export type RadioCall = {
   message: string;
   traceability: TraceabilityEntry[];
   confidenceFlags: string[];
-}
+};
 
-export interface AnalysisResult {
+export type AnalysisResult = {
   recorderFinding: RecorderFinding;
   dataQuality: DataQuality;
   laps: LapReport[];
   corners: DetectedCorner[];
   timeLoss: TimeLossReport;
   radioCall: RadioCall;
-}
+};

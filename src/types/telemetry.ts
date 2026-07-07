@@ -1,11 +1,11 @@
-export interface WireTyres {
+export type WireTyres = {
   fl: number;
   fr: number;
   rl: number;
   rr: number;
-}
+};
 
-export interface WireFrame {
+export type WireFrame = {
   ts: number;
   lap: number;
   pos: number;
@@ -16,25 +16,25 @@ export interface WireFrame {
   gear: number;
   rpm: number;
   tyres: WireTyres;
-}
+};
 
-export interface ParsedStint {
+export type ParsedStint = {
   schema: string;
   recorder?: { name: string; version: string };
   session_id?: string;
   note?: string;
   frame_count: number;
   frames: WireFrame[];
-}
+};
 
-export interface DecodedTyres {
+export type DecodedTyres = {
   fl: number;
   fr: number;
   rl: number;
   rr: number;
-}
+};
 
-export interface DecodedFrame {
+export type DecodedFrame = {
   ts: number;
   lap: number;
   pos: number;
@@ -45,6 +45,6 @@ export interface DecodedFrame {
   gear: number;
   rpm: number;
   tyres: DecodedTyres;
-}
+};
 
 export type CleanedFrame = DecodedFrame;

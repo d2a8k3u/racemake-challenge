@@ -2,10 +2,10 @@ import type { z } from "zod";
 import { ParsedStintSchema } from "./ingestion/schema";
 import { runAnalysisPipeline } from "./routes/analysis";
 
-interface CliOptions {
+type CliOptions = {
   inputPath: string;
   outputPath: string | null;
-}
+};
 
 function parseArgs(argv: string[]): CliOptions | null {
   const positional: string[] = [];
