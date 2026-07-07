@@ -12,6 +12,29 @@ export function linearInterpolate(
   return y0 + fraction * (y1 - y0);
 }
 
+type PosPoint = { pos: number };
+
+function interpolateInBracket<T extends PosPoint>(
+  sorted: T[],
+  targetPos: number,
+  extractValue: (point: T) => number,
+): number {
+  let lo = 0;
+  let hi = sorted.length - 1;
+  while (hi - lo > 1) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (sorted[mid].pos < targetPos) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+
+  const left = sorted[lo];
+  const right = sorted[hi];
+  return linearInterpolate(targetPos, left.pos, extractValue(left), right.pos, extractValue(right));
+}
+
 export function resampleToPosGrid(
   frames: { pos: number; value: number }[],
   gridPoints: number,
@@ -42,20 +65,7 @@ function sampleAt(sorted: { pos: number; value: number }[], targetPos: number): 
   if (targetPos <= first.pos) return first.value;
   if (targetPos >= last.pos) return last.value;
 
-  let lo = 0;
-  let hi = sorted.length - 1;
-  while (hi - lo > 1) {
-    const mid = Math.floor((lo + hi) / 2);
-    if (sorted[mid].pos < targetPos) {
-      lo = mid;
-    } else {
-      hi = mid;
-    }
-  }
-
-  const left = sorted[lo];
-  const right = sorted[hi];
-  return linearInterpolate(targetPos, left.pos, left.value, right.pos, right.value);
+  return interpolateInBracket(sorted, targetPos, (p) => p.value);
 }
 
 export function interpolateTimeAtPos(
@@ -73,18 +83,5 @@ export function interpolateTimeAtPos(
     return sorted[sorted.length - 1].t;
   }
 
-  let lo = 0;
-  let hi = sorted.length - 1;
-  while (hi - lo > 1) {
-    const mid = Math.floor((lo + hi) / 2);
-    if (sorted[mid].pos < targetPos) {
-      lo = mid;
-    } else {
-      hi = mid;
-    }
-  }
-
-  const left = sorted[lo];
-  const right = sorted[hi];
-  return linearInterpolate(targetPos, left.pos, left.t, right.pos, right.t);
+  return interpolateInBracket(sorted, targetPos, (p) => p.t);
 }
