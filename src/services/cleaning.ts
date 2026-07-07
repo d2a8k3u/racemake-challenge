@@ -1,14 +1,13 @@
 import type { DropoutDetail, RemovedFrameDetail } from "../types/analysis";
 import type { CleanedFrame, DecodedFrame } from "../types/telemetry";
+import { computeDropoutThreshold } from "../utils/dropout";
 import { mean, median, stdev } from "../utils/stats";
 
 const MAX_SPEED_KMH = 400;
 const MAX_RPM = 20000;
 const MAX_SPEED_JUMP_KMH = 100;
-const MIN_DROPOUT_GAP_MS = 500;
-const DROPOUT_GAP_MEDIAN_MULTIPLIER = 5;
 
-export interface CleanResult {
+export type CleanResult = {
   validFrames: CleanedFrame[];
   removedFrames: RemovedFrameDetail[];
   dropouts: DropoutDetail[];
@@ -19,7 +18,7 @@ export interface CleanResult {
     minMs: number;
     maxMs: number;
   };
-}
+};
 
 const EMPTY_FRAME_RATE = {
   meanMs: 0,
@@ -67,11 +66,7 @@ function detectDropouts(validFrames: CleanedFrame[]): DropoutDetail[] {
   for (let i = 1; i < validFrames.length; i++) {
     intervals.push(validFrames[i].ts - validFrames[i - 1].ts);
   }
-  const medianInterval = median(intervals);
-  const dropoutThreshold = Math.max(
-    MIN_DROPOUT_GAP_MS,
-    DROPOUT_GAP_MEDIAN_MULTIPLIER * medianInterval,
-  );
+  const dropoutThreshold = computeDropoutThreshold(intervals);
 
   const dropouts: DropoutDetail[] = [];
   for (let i = 1; i < validFrames.length; i++) {

@@ -1,10 +1,8 @@
 import type { LapReport } from "../types/analysis";
 import type { CleanedFrame } from "../types/telemetry";
+import { computeDropoutThreshold } from "../utils/dropout";
 import { guardNaN } from "../utils/math";
-import { median } from "../utils/stats";
 
-const DROPOUT_GAP_FLOOR_MS = 500;
-const DROPOUT_GAP_MEDIAN_MULTIPLIER = 5;
 const OUT_LAP_POS_START_MIN = 0.1;
 const IN_LAP_POS_END_MAX = 0.9;
 const IN_LAP_FINAL_SPEED_MAX_KMH = 5;
@@ -37,19 +35,18 @@ function isFullRacingClassification(classification: LapClassification): boolean 
   return classification === "full";
 }
 
-function computeDropoutThreshold(lapFrames: CleanedFrame[]): number {
-  if (lapFrames.length < 2) return DROPOUT_GAP_FLOOR_MS;
+function computeLapDropoutThreshold(lapFrames: CleanedFrame[]): number {
+  if (lapFrames.length < 2) return computeDropoutThreshold([]);
   const intervals: number[] = [];
   for (let i = 1; i < lapFrames.length; i++) {
     intervals.push(lapFrames[i].ts - lapFrames[i - 1].ts);
   }
-  const medianInterval = median(intervals);
-  return Math.max(DROPOUT_GAP_FLOOR_MS, DROPOUT_GAP_MEDIAN_MULTIPLIER * medianInterval);
+  return computeDropoutThreshold(intervals);
 }
 
 function sumDropoutGapsWithinLap(lapFrames: CleanedFrame[]): number {
   if (lapFrames.length < 2) return 0;
-  const threshold = computeDropoutThreshold(lapFrames);
+  const threshold = computeLapDropoutThreshold(lapFrames);
   let totalDropoutMs = 0;
   for (let i = 1; i < lapFrames.length; i++) {
     const gap = lapFrames[i].ts - lapFrames[i - 1].ts;
