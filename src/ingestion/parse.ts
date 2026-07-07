@@ -1,3 +1,4 @@
+import type { RecorderFinding } from "../types/analysis";
 import type { DecodedFrame, DecodedTyres } from "../types/telemetry";
 import type { ParsedStint, WireFrame, WireTyres } from "./schema";
 import { ParsedStintSchema } from "./schema";
@@ -35,4 +36,17 @@ export function decodeFrame(frame: WireFrame): DecodedFrame {
 
 export function decodeStint(stint: ParsedStint): DecodedFrame[] {
   return stint.frames.map(decodeFrame);
+}
+
+export function buildRecorderFinding(parsedStint: ParsedStint): RecorderFinding {
+  const firstFrame = parsedStint.frames[0];
+  const rawTyre = firstFrame?.tyres.fl ?? 0;
+  const decodedTyre = rawTyre / TYRE_TEMP_SCALE;
+
+  return {
+    field: "tyres",
+    description: "Tyre temperatures are encoded as (celsius × 10) as i16",
+    scaleFactor: TYRE_TEMP_SCALE,
+    example: { raw: rawTyre, decoded: decodedTyre, unit: "°C" },
+  };
 }

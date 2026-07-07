@@ -1,14 +1,14 @@
 import { Hono } from "hono";
 import type { z } from "zod";
-import { decodeStint, parseStint, TYRE_TEMP_SCALE } from "../ingestion/parse";
+import { buildRecorderFinding, decodeStint, parseStint } from "../ingestion/parse";
 import { ParsedStintSchema } from "../ingestion/schema";
 import { cleanFrames } from "../services/cleaning";
 import { detectCorners } from "../services/corners";
 import { detectLaps, selectBestAndWorstLaps } from "../services/laps";
 import { generateRadioCall } from "../services/radio";
 import { analyzeTimeLoss } from "../services/timeloss";
-import type { AnalysisResult, RecorderFinding } from "../types/analysis";
-import type { CleanedFrame } from "../types/telemetry";
+import type { AnalysisResult } from "../types/analysis";
+import { framesForLap } from "../utils/frames";
 
 export const analysis = new Hono();
 
@@ -75,22 +75,5 @@ export function runAnalysisPipeline(raw: z.infer<typeof ParsedStintSchema>): Ana
     corners,
     timeLoss,
     radioCall,
-  };
-}
-
-function framesForLap(frames: CleanedFrame[], lapNumber: number): CleanedFrame[] {
-  return frames.filter((frame) => frame.lap === lapNumber);
-}
-
-function buildRecorderFinding(parsedStint: z.infer<typeof ParsedStintSchema>): RecorderFinding {
-  const firstFrame = parsedStint.frames[0];
-  const rawTyre = firstFrame?.tyres.fl ?? 0;
-  const decodedTyre = rawTyre / TYRE_TEMP_SCALE;
-
-  return {
-    field: "tyres",
-    description: "Tyre temperatures are encoded as (celsius × 10) as i16",
-    scaleFactor: TYRE_TEMP_SCALE,
-    example: { raw: rawTyre, decoded: decodedTyre, unit: "°C" },
   };
 }
